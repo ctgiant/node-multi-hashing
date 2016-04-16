@@ -301,7 +301,7 @@ if ((hash[22] & mask) != zero)
 
 }
 
-static void hmq_hash(const unsigned char *input, int len , char *output)
+void hmq_hash(const unsigned char *input, int len , char *output)
 {
     uint256 hash = hmqhash(input, input + len);
     memcpy(output, &hash, 32);
