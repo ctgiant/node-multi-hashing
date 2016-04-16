@@ -28,14 +28,7 @@ static __inline uint32_t
 be32dec(const void *pp)
 {
 	const uint8_t *p = (uint8_t const *)pp;
-=======
-#ifdef GLOBALDEFINED
-#define GLOBAL
-#else
-#define GLOBAL extern
-#endif
->>>>>>> origin/master
-
+	
 	return ((uint32_t)(p[3]) + ((uint32_t)(p[2]) << 8) +
 	    ((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
 }
