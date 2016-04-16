@@ -22,9 +22,8 @@
 #include "sha3/sph_sha2.h"
 #include "sha3/sph_haval.h"
 
-<<<<<<< HEAD
 
-//* #define ARRAYLEN(array)     (sizeof(array)/sizeof((array)[0])) */
+
 static __inline uint32_t
 be32dec(const void *pp)
 {
