@@ -290,9 +290,9 @@ if ((hashA[0] & mask) != zero)
     sph_bmw512 (&ctx_bmw, hashB, 64);		//24
     sph_bmw512_close(&ctx_bmw, hashA);		//25
 
-}
-
 
 
 
 	memcpy(output, hashA, 32);
+
+}
