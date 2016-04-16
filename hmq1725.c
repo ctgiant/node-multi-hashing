@@ -1,4 +1,4 @@
-//#include "hmq1725.h"
+#include "hmq1725.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -22,78 +22,84 @@
 #include "sha3/sph_sha2.h"
 #include "sha3/sph_haval.h"
 
+<<<<<<< HEAD
+
+//* #define ARRAYLEN(array)     (sizeof(array)/sizeof((array)[0])) */
+static __inline uint32_t
+be32dec(const void *pp)
+{
+	const uint8_t *p = (uint8_t const *)pp;
+=======
 #ifdef GLOBALDEFINED
 #define GLOBAL
 #else
 #define GLOBAL extern
 #endif
+>>>>>>> origin/master
 
-GLOBAL sph_blake512_context     z_blake;
-GLOBAL sph_bmw512_context       z_bmw;
-GLOBAL sph_groestl512_context   z_groestl;
-GLOBAL sph_jh512_context        z_jh;
-GLOBAL sph_keccak512_context    z_keccak;
-GLOBAL sph_skein512_context     z_skein;
-/** ADDED FOR HMQ1725 */
-GLOBAL sph_luffa512_context     z_luffa;
-GLOBAL sph_cubehash512_context  z_cubehash;
-GLOBAL sph_shavite512_context   z_shavite;
-GLOBAL sph_simd512_context      z_simd;
-GLOBAL sph_echo512_context      z_echo;
-GLOBAL sph_hamsi512_context     z_hamsi;
-GLOBAL sph_fugue512_context     z_fugue;
-GLOBAL sph_shabal512_context    z_shabal;
-GLOBAL sph_whirlpool_context    z_whirlpool;
-GLOBAL sph_sha512_context       z_sha2;
-GLOBAL sph_haval256_5_context   z_haval;
+	return ((uint32_t)(p[3]) + ((uint32_t)(p[2]) << 8) +
+	    ((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
+}
 
-
-#define fillz() do { \
-    sph_blake512_init(&z_blake); \
-    sph_bmw512_init(&z_bmw); \
-    sph_groestl512_init(&z_groestl); \
-    sph_jh512_init(&z_jh); \
-    sph_keccak512_init(&z_keccak); \
-    sph_skein512_init(&z_skein); \
-    sph_luffa512_init(&z_luffa); \
-    sph_cubehash512_init(&z_cubehash); \
-    sph_shavite512_init(&z_shavite); \
-    sph_simd512_init(&z_simd); \
-    sph_echo512_init(&z_echo); \
-    sph_hamsi512_init(&z_hamsi); \
-    sph_fugue512_init(&z_fugue); \
-    sph_shabal512_init(&z_shabal); \
-    sph_whirlpool_init(&z_whirlpool); \
-    sph_sha512_init(&z_sha2); \
-    sph_haval256_5_init(&z_haval); \
-    } while (0)
-
-
-
-#define ZBLAKE (memcpy(&ctx_blake, &z_blake, sizeof(z_blake)))
-#define ZBMW (memcpy(&ctx_bmw, &z_bmw, sizeof(z_bmw)))
-#define ZGROESTL (memcpy(&ctx_groestl, &z_groestl, sizeof(z_groestl)))
-#define ZJH (memcpy(&ctx_jh, &z_jh, sizeof(z_jh)))
-#define ZKECCAK (memcpy(&ctx_keccak, &z_keccak, sizeof(z_keccak)))
-#define ZSKEIN (memcpy(&ctx_skein, &z_skein, sizeof(z_skein)))
-/** ADDED FOR HMQ1725 */
-#define ZWHIRLPOOL (memcpy(&ctx_whirlpool, &z_whirlpool, sizeof(z_whirlpool)))
-#define ZFUGUE (memcpy(&ctx_fugue, &z_fugue, sizeof(z_fugue)))
-#define ZHAMSI (memcpy(&ctx_hamsi, &z_hamsi, sizeof(z_hamsi)))
-#define ZSHABAL (memcpy(&ctx_shabal, &z_shabal, sizeof(z_shabal))
-#define ZSHA2 (memcpy(&ctx_sha2, &z_sha2, sizeof(z_sha2)))
-#define ZHAVAL (memcpy(&ctx_haval, &z_haval, sizeof(z_haval)))
-
-
-
-//* #define ARRAYLEN(array)     (sizeof(array)/sizeof((array)[0])) */
-
-
-template<typename T1>
-inline uint256 hmqhash(const T1 pbegin, const T1 pend)
+static __inline void
+be32enc(void *pp, uint32_t x)
 {
+	uint8_t * p = (uint8_t *)pp;
 
+	p[3] = x & 0xff;
+	p[2] = (x >> 8) & 0xff;
+	p[1] = (x >> 16) & 0xff;
+	p[0] = (x >> 24) & 0xff;
+}
 
+static __inline uint32_t
+le32dec(const void *pp)
+{
+	const uint8_t *p = (uint8_t const *)pp;
+
+	return ((uint32_t)(p[0]) + ((uint32_t)(p[1]) << 8) +
+	    ((uint32_t)(p[2]) << 16) + ((uint32_t)(p[3]) << 24));
+}
+
+static __inline void
+le32enc(void *pp, uint32_t x)
+{
+	uint8_t * p = (uint8_t *)pp;
+
+	p[0] = x & 0xff;
+	p[1] = (x >> 8) & 0xff;
+	p[2] = (x >> 16) & 0xff;
+	p[3] = (x >> 24) & 0xff;
+}
+
+/*
+ * Encode a length len/4 vector of (uint32_t) into a length len vector of
+ * (unsigned char) in big-endian form.  Assumes len is a multiple of 4.
+ */
+static void
+be32enc_vect(unsigned char *dst, const uint32_t *src, uint32_t len)
+{
+	size_t i;
+
+	for (i = 0; i < len / 4; i++)
+		be32enc(dst + i * 4, src[i]);
+}
+
+/*
+ * Decode a big-endian length len vector of (unsigned char) into a length
+ * len/4 vector of (uint32_t).  Assumes len is a multiple of 4.
+ */
+static void
+be32dec_vect(uint32_t *dst, const unsigned char *src, uint32_t len)
+{
+	size_t i;
+
+	for (i = 0; i < len / 4; i++)
+		dst[i] = be32dec(src + i * 4);
+}
+
+void hmq1725_hash(const char* input, char* output, uint32_t len)
+{
     sph_blake512_context     ctx_blake;
     sph_bmw512_context       ctx_bmw;
     sph_groestl512_context   ctx_groestl;
@@ -113,194 +119,188 @@ inline uint256 hmqhash(const T1 pbegin, const T1 pend)
     sph_sha512_context        ctx_sha2;
     sph_haval256_5_context    ctx_haval;
 
-    static unsigned char pblank[1];
-
-    uint512 mask = 24;
-    uint512 zero = 0;
+    uint32_t mask = 24;
+    uint32_t zero = 0;
     
-    uint512 hash[25];
+    uint32_t hash[25];
 
-    sph_bmw512_init(&ctx_bmw);
-    sph_bmw512 (&ctx_bmw, (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0])), (pend - pbegin) * sizeof(pbegin[0]));
-    sph_bmw512_close(&ctx_bmw, static_cast<void*>(&hash[0]));
+
+    sph_bmw512_init(&ctx_blake);
+    sph_bmw512 (&ctx_blake, input, len);
+    sph_bmw512_close (&ctx_blake, hashA);	//0
 
     sph_whirlpool_init(&ctx_whirlpool);
-    sph_whirlpool (&ctx_whirlpool, static_cast<const void*>(&hash[0]), 64);
-    sph_whirlpool_close(&ctx_whirlpool, static_cast<void*>(&hash[1]));
+    sph_whirlpool (&ctx_whirlpool, hashA, 64);		//0
+    sph_whirlpool_close(&ctx_whirlpool, hashB);		//1
 
-    if ((hash[1] & mask) != zero)
+    if ((hashB[0] & mask) != zero)
     {
         sph_groestl512_init(&ctx_groestl);
-        sph_groestl512 (&ctx_groestl, static_cast<const void*>(&hash[1]), 64);
-        sph_groestl512_close(&ctx_groestl, static_cast<void*>(&hash[2]));
+        sph_groestl512 (&ctx_groestl, hashB), 64);	//1
+        sph_groestl512_close(&ctx_groestl, hashA);	//2
     }
     else
     {
         sph_skein512_init(&ctx_skein);
-        sph_skein512 (&ctx_skein, static_cast<const void*>(&hash[1]), 64);
-        sph_skein512_close(&ctx_skein, static_cast<void*>(&hash[2]));
+        sph_skein512 (&ctx_skein, hashB), 64);	//1
+        sph_skein512_close(&ctx_skein, hashA);	//2
     }
 
 
     sph_jh512_init(&ctx_jh);
-    sph_jh512 (&ctx_jh, static_cast<const void*>(&hash[2]), 64);
-    sph_jh512_close(&ctx_jh, static_cast<void*>(&hash[3]));
+    sph_jh512 (&ctx_jh, hashA), 64);		//2
+    sph_jh512_close(&ctx_jh, hashB);		//3
     
     sph_keccak512_init(&ctx_keccak);
-    sph_keccak512 (&ctx_keccak, static_cast<const void*>(&hash[3]), 64);
-    sph_keccak512_close(&ctx_keccak, static_cast<void*>(&hash[4]));
+    sph_keccak512 (&ctx_keccak, hashB), 64);	//3
+    sph_keccak512_close(&ctx_keccak, hashA);	//4
 
-if ((hash[4] & mask) != zero)
+if ((hashA[0] & mask) != zero)
     {
         sph_blake512_init(&ctx_blake);
-        sph_blake512 (&ctx_blake, static_cast<const void*>(&hash[4]), 64);
-        sph_blake512_close(&ctx_blake, static_cast<void*>(&hash[5]));
+        sph_blake512 (&ctx_blake, hashA), 64);		//4
+        sph_blake512_close(&ctx_blake, hashB]));	//5
     }
     else
     {
         sph_bmw512_init(&ctx_bmw);
-        sph_bmw512 (&ctx_bmw, static_cast<const void*>(&hash[4]), 64);
-        sph_bmw512_close(&ctx_bmw, static_cast<void*>(&hash[5]));
+        sph_bmw512 (&ctx_bmw, hashA, 64);		//4
+        sph_bmw512_close(&ctx_bmw, hashB);		//5
     }
 
     sph_luffa512_init(&ctx_luffa);
-    sph_luffa512 (&ctx_luffa, static_cast<void*>(&hash[5]), 64);
-    sph_luffa512_close(&ctx_luffa, static_cast<void*>(&hash[6]));
+    sph_luffa512 (&ctx_luffa, hashB), 64);		//5
+    sph_luffa512_close(&ctx_luffa, hashA);		//6
     
     sph_cubehash512_init(&ctx_cubehash);
-    sph_cubehash512 (&ctx_cubehash, static_cast<const void*>(&hash[6]), 64);
-    sph_cubehash512_close(&ctx_cubehash, static_cast<void*>(&hash[7]));
+    sph_cubehash512 (&ctx_cubehash, hashA, 64);		//6
+    sph_cubehash512_close(&ctx_cubehash, hashB);	//7
  
-if ((hash[7] & mask) != zero)
+if ((hashB[0] & mask) != zero)
     {
         sph_keccak512_init(&ctx_keccak);
-        sph_keccak512 (&ctx_keccak, static_cast<const void*>(&hash[7]), 64);
-        sph_keccak512_close(&ctx_keccak, static_cast<void*>(&hash[8]));
+        sph_keccak512 (&ctx_keccak, hashB), 64);	//7
+        sph_keccak512_close(&ctx_keccak, hashA);	//8
     }
     else
     {
         sph_jh512_init(&ctx_jh);
-        sph_jh512 (&ctx_jh, static_cast<const void*>(&hash[7]), 64);
-        sph_jh512_close(&ctx_jh, static_cast<void*>(&hash[8]));
+        sph_jh512 (&ctx_jh, hashB), 64);		//7
+        sph_jh512_close(&ctx_jh, hashA);		//8
     }
 
     sph_shavite512_init(&ctx_shavite);
-    sph_shavite512(&ctx_shavite, static_cast<const void*>(&hash[8]), 64);
-    sph_shavite512_close(&ctx_shavite, static_cast<void*>(&hash[9]));
+    sph_shavite512(&ctx_shavite, hashA), 64);	//8
+    sph_shavite512_close(&ctx_shavite, hashB);	//9
         
     sph_simd512_init(&ctx_simd);
-    sph_simd512 (&ctx_simd, static_cast<const void*>(&hash[9]), 64);
-    sph_simd512_close(&ctx_simd, static_cast<void*>(&hash[10]));
+    sph_simd512 (&ctx_simd, hashB), 64);		//9
+    sph_simd512_close(&ctx_simd, hashA);		//10
 
-if ((hash[10] & mask) != zero)
+if ((hashA[0] & mask) != zero)
     {
     sph_whirlpool_init(&ctx_whirlpool);
-    sph_whirlpool (&ctx_whirlpool, static_cast<const void*>(&hash[10]), 64);
-    sph_whirlpool_close(&ctx_whirlpool, static_cast<void*>(&hash[11]));
+    sph_whirlpool (&ctx_whirlpool, hashA), 64);	//10
+    sph_whirlpool_close(&ctx_whirlpool, hashB);	//11
     }
     else
     {
     sph_haval256_5_init(&ctx_haval);
-    sph_haval256_5 (&ctx_haval, static_cast<const void*>(&hash[10]), 64);
-    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&hash[11]));
+    sph_haval256_5 (&ctx_haval, hashA), 64);	//10
+    sph_haval256_5_close(&ctx_haval, hashB);	//11
     }
 
     sph_echo512_init(&ctx_echo);
-    sph_echo512 (&ctx_echo, static_cast<const void*>(&hash[11]), 64);
-    sph_echo512_close(&ctx_echo, static_cast<void*>(&hash[12]));
+    sph_echo512 (&ctx_echo, hashB), 64);		//11
+    sph_echo512_close(&ctx_echo, hashA);		//12
 
     sph_blake512_init(&ctx_blake);
-    sph_blake512 (&ctx_blake, static_cast<const void*>(&hash[12]), 64);
-    sph_blake512_close(&ctx_blake, static_cast<void*>(&hash[13]));
+    sph_blake512 (&ctx_blake, hashA), 64);		//12
+    sph_blake512_close(&ctx_blake, hashB);		//13
 
-if ((hash[13] & mask) != zero)
+if ((hashB[0] & mask) != zero)
     {
     sph_shavite512_init(&ctx_shavite);
-    sph_shavite512(&ctx_shavite, static_cast<const void*>(&hash[13]), 64);
-    sph_shavite512_close(&ctx_shavite, static_cast<void*>(&hash[14]));
+    sph_shavite512(&ctx_shavite, hashB), 64);	//13
+    sph_shavite512_close(&ctx_shavite, hashA);	//14
     }
     else
     {
     sph_luffa512_init(&ctx_luffa);
-    sph_luffa512 (&ctx_luffa, static_cast<void*>(&hash[13]), 64);
-    sph_luffa512_close(&ctx_luffa, static_cast<void*>(&hash[14]));
+    sph_luffa512 (&ctx_luffa, hashB), 64);		//13
+    sph_luffa512_close(&ctx_luffa, hashA);		//14
     }
 
     sph_hamsi512_init(&ctx_hamsi);
-    sph_hamsi512 (&ctx_hamsi, static_cast<const void*>(&hash[14]), 64);
-    sph_hamsi512_close(&ctx_hamsi, static_cast<void*>(&hash[15]));
+    sph_hamsi512 (&ctx_hamsi, hashA), 64);		//14
+    sph_hamsi512_close(&ctx_hamsi, hashB);		//15
 
     sph_fugue512_init(&ctx_fugue);
-    sph_fugue512 (&ctx_fugue, static_cast<const void*>(&hash[15]), 64);
-    sph_fugue512_close(&ctx_fugue, static_cast<void*>(&hash[16]));
+    sph_fugue512 (&ctx_fugue, hashB), 64);		//16
+    sph_fugue512_close(&ctx_fugue, hashA);		//17
 
-if ((hash[16] & mask) != zero)
+if ((hashA[0] & mask) != zero)
     {
     sph_echo512_init(&ctx_echo);
-    sph_echo512 (&ctx_echo, static_cast<const void*>(&hash[16]), 64);
-    sph_echo512_close(&ctx_echo, static_cast<void*>(&hash[17]));
+    sph_echo512 (&ctx_echo, hashA), 64);		//17
+    sph_echo512_close(&ctx_echo, hashB);		//18
     }
     else
     {
     sph_simd512_init(&ctx_simd);
-    sph_simd512 (&ctx_simd, static_cast<const void*>(&hash[16]), 64);
-    sph_simd512_close(&ctx_simd, static_cast<void*>(&hash[17]));
+    sph_simd512 (&ctx_simd, hashA), 64);		//17
+    sph_simd512_close(&ctx_simd, hashB);		//18
     }
 
     sph_shabal512_init(&ctx_shabal);
-    sph_shabal512 (&ctx_shabal, static_cast<const void*>(&hash[17]), 64);
-    sph_shabal512_close(&ctx_shabal, static_cast<void*>(&hash[18]));
+    sph_shabal512 (&ctx_shabal, hashB), 64);	//18
+    sph_shabal512_close(&ctx_shabal, hashA);	//19
 
     sph_whirlpool_init(&ctx_whirlpool);
-    sph_whirlpool (&ctx_whirlpool, static_cast<const void*>(&hash[18]), 64);
-    sph_whirlpool_close(&ctx_whirlpool, static_cast<void*>(&hash[19]));
+    sph_whirlpool (&ctx_whirlpool, hashA), 64);	//19
+    sph_whirlpool_close(&ctx_whirlpool, hashB);	//20
 
-if ((hash[19] & mask) != zero)
+if ((hashB[0] & mask) != zero)
     {
     sph_fugue512_init(&ctx_fugue);
-    sph_fugue512 (&ctx_fugue, static_cast<const void*>(&hash[19]), 64);
-    sph_fugue512_close(&ctx_fugue, static_cast<void*>(&hash[20]));
+    sph_fugue512 (&ctx_fugue, hashB), 64);	//20
+    sph_fugue512_close(&ctx_fugue, hashA);	//21
     }
     else
     {
     sph_sha512_init(&ctx_sha2);
-    sph_sha512 (&ctx_sha2, static_cast<const void*>(&hash[19]), 64);
-    sph_sha512_close(&ctx_sha2, static_cast<void*>(&hash[20]));
+    sph_sha512 (&ctx_sha2, hashB), 64);		//20
+    sph_sha512_close(&ctx_sha2, hashA);		//21
     }
 
     sph_groestl512_init(&ctx_groestl);
-    sph_groestl512 (&ctx_groestl, static_cast<const void*>(&hash[20]), 64);
-    sph_groestl512_close(&ctx_groestl, static_cast<void*>(&hash[21]));
+    sph_groestl512 (&ctx_groestl, hashA), 64);	//21
+    sph_groestl512_close(&ctx_groestl, hashB);	//22
 
     sph_sha512_init(&ctx_sha2);
-    sph_sha512 (&ctx_sha2, static_cast<const void*>(&hash[21]), 64);
-    sph_sha512_close(&ctx_sha2, static_cast<void*>(&hash[22]));
+    sph_sha512 (&ctx_sha2, hashB), 64);		//22
+    sph_sha512_close(&ctx_sha2, hashA);		//23
 
-if ((hash[22] & mask) != zero)
+if ((hashA[0] & mask) != zero)
     {
     sph_haval256_5_init(&ctx_haval);
-    sph_haval256_5 (&ctx_haval, static_cast<const void*>(&hash[22]), 64);
-    sph_haval256_5_close(&ctx_haval, static_cast<void*>(&hash[23]));
+    sph_haval256_5 (&ctx_haval, hashA), 64);	//23
+    sph_haval256_5_close(&ctx_haval, hashB);	//24
     }
     else
     {
     sph_whirlpool_init(&ctx_whirlpool);
-    sph_whirlpool (&ctx_whirlpool, static_cast<const void*>(&hash[22]), 64);
-    sph_whirlpool_close(&ctx_whirlpool, static_cast<void*>(&hash[23]));
+    sph_whirlpool (&ctx_whirlpool, hashA), 64);	//23
+    sph_whirlpool_close(&ctx_whirlpool, hashB);	//24
     }
 
     sph_bmw512_init(&ctx_bmw);
-    sph_bmw512 (&ctx_bmw, static_cast<const void*>(&hash[23]), 64);
-    sph_bmw512_close(&ctx_bmw, static_cast<void*>(&hash[24]));
-
-    return hash[24].trim256();
-
-
+    sph_bmw512 (&ctx_bmw, hashB), 64);		//24
+    sph_bmw512_close(&ctx_bmw, hashA);		//25
 
 }
 
-void hmq_hash(const unsigned char *input, int len , char *output)
-{
-    uint256 hash = hmqhash(input, input + len);
-    memcpy(output, &hash, 32);
-}
+
+
+
+	memcpy(output, hashA, 32);
