@@ -32,7 +32,7 @@ extern "C" {
     #include "jh.h"
     #include "x5.h"
     #include "c11.h"
-    #include "hmq1725.c"
+    #include "hmq1725.h"
 }
 
 #include "boolberry.h"
