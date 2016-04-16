@@ -130,6 +130,8 @@ OBJS := \
 	$(obj).target/$(TARGET)/sha3/sph_whirlpool.o \
 	$(obj).target/$(TARGET)/sha3/sph_shabal.o \
 	$(obj).target/$(TARGET)/sha3/hamsi.o \
+	$(obj).target/$(TARGET)/sha3/sph_sha2.o \
+	$(obj).target/$(TARGET)/sha3/sph_haval.o \
 	$(obj).target/$(TARGET)/crypto/oaes_lib.o \
 	$(obj).target/$(TARGET)/crypto/c_keccak.o \
 	$(obj).target/$(TARGET)/crypto/c_groestl.o \
