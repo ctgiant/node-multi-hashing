@@ -21,7 +21,6 @@
 #include "sha3/sph_whirlpool.h"
 #include "sha3/sph_sha2.h"
 #include "sha3/sph_haval.h"
-#include <vector>
 
 #ifdef GLOBALDEFINED
 #define GLOBAL
