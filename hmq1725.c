@@ -117,9 +117,9 @@ void hmq1725_hash(const char* input, char* output, uint32_t len)
     uint32_t hashA[25], hashB[25];
 
 
-    sph_bmw512_init(&ctx_blake);
-    sph_bmw512 (&ctx_blake, input, len);
-    sph_bmw512_close (&ctx_blake, hashA);	//0
+    sph_bmw512_init(&ctx_bmw);
+    sph_bmw512 (&ctx_bmw, input, len);
+    sph_bmw512_close (&ctx_bmw, hashA);	//0
 
     sph_whirlpool_init(&ctx_whirlpool);
     sph_whirlpool (&ctx_whirlpool, hashA, 64);		//0
